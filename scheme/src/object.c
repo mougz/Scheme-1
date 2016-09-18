@@ -41,23 +41,11 @@ object stringlength( char * str   ) {
 
 
 object make_string(char * str ){
-	/*char chaine2[256];
-	chaine2 = str;
-	strcpy(chaine2, str);
-	*/
 	object t=make_object(SFS_STRING);
-	/*t->this.string=str;*/
 	strcpy(t->this.string, str);
 	return t;
 }
 
-main(){
-	char t[256];
-	sscanf(t...=
-	
-	stringlenfth(t);
-	make_string(t);
-}
 
 object make_bool(void) {
 	object t=make_object(SFS_BOOLEAN);
