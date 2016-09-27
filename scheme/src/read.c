@@ -311,13 +311,14 @@ object sfs_read_atom( char *input, uint *here ) {
     uint step=*here;
 
 
-
     while (input[step]==' ' && input[step]!='\0') {
         step++;
     }
 
     switch (input[step]) {
     case '#':
+    {	
+	int compteur=0;
         if (input[step+1]=='\\')
         {
             if (isspace(input[step+2]))
@@ -327,22 +328,30 @@ object sfs_read_atom( char *input, uint *here ) {
             }
             else
             {
-                if (isspace(input[step+3]))
+                if (isspace(input[step+3]) || input[step+3]=='\0' || input[step+3]=='\n' || input[step+3]==' ' || &input[step+3]==NULL)
                 {
                     atom=make_character(input[step+2]);
+		    compteur+=1;
                 }
                 if (input[step+2]=='s' && input[step+3]=='p' && input[step+4]=='a' && input[step+5]=='c' && input[step+6]=='e' && isspace(input[step+7]))
                 {
                     atom=make_character(' ');
+		    compteur+=1;
                 }
                 if (input[step+2]=='n' && input[step+3]=='e' && input[step+4]=='w' && input[step+5]=='l' && input[step+6]=='i' && input[step+7]=='n' && input[step+8]=='e' && isspace(input[step+9]))
                 {
                     atom=make_character('\n');
+		    compteur+=1;
                 }
-                else {
+		if (compteur>=1)
+		{
+			compteur=0;
+		}
+                else {	
                     WARNING_MSG("Not valid character");
                     return NULL;
                 }
+
             }
         }
         if (input[step+1]=='t') {
@@ -354,7 +363,7 @@ object sfs_read_atom( char *input, uint *here ) {
                 return NULL;
             }
         }
-        if (input[*(here+1)]=='t')
+        if (input[step+1]=='t')
         {
             if (isspace(input[step+2]) || input[step+2]=='\0' )
             {
@@ -366,44 +375,109 @@ object sfs_read_atom( char *input, uint *here ) {
             }
         }
         break;
-
-
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
+    }
+    
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
     {
         int number;
         char* pend;
         number=strtol(&input[step],&pend,0);
-        while (input[step]==' ') {
-            step++;
-        }
-        if (input[step]!='\0' || input[step]!=' ')
-        {
-            WARNING_MSG("Not valid number");
-            return NULL;
-        }
-        else {
-            atom=make_integer(number);
-        }
+	/*printf("%d",*pend);*/
+
+	if ( *pend != 0)
+	{
+		WARNING_MSG("Not valid number");
+	  	return NULL;
+	}
+  
+        atom=make_integer(number);
+    }
+    break;
+
+    case '"':
+    {   
+        int k=0;
+	char     str[BIGSTRING]="";
+	extraire_chaine(input+1,str,k);
+	atom=make_string(str);
     }
     break;
     }
-
+    
 
     return atom;
 }
 
-object sfs_read_pair( char *stream, uint *i ) {
+object sfs_read_pair( char *stream, uint *here ) {
 
-    object pair = NULL;
+    object o_pair= make_object(SFS_PAIR) ;
+    o_pair->this.pair.car = sfs_read(stream, here);
+    
+    insert_char ( stream, "(", (*here) );
 
-    return pair;
+    o_pair->this.pair.cdr = sfs_read(stream, here);
+    
+    return o_pair;
 }
 
+char * extraire_chaine(char * chaine, char* str,int k)
+{
+	int n=strlen(chaine);	
+	char *p=NULL;
+	int length=0;
+	p=strchr(chaine,'"');
+	if (p==NULL)
+	{		
+		WARNING_MSG("Not valid string");
+	}
+	if (p-chaine+1==n)
+	{
+		strncat(str,chaine,n-1);
+		return str;	
+}
+	else
+	{
+		if(*(p-1)!='\\')
+		{		
+			WARNING_MSG("Not valid string");
+			return str;
+		}
+		else
+		{
+			length=p-chaine-1;
+			strncat(str,chaine,length);
+			k+=length;
+			printf("%d \n",k);
+			printf("%d \n",length);
+			str[k]='"';
+			p=NULL;
+			extraire_chaine(chaine+length+2,str,k);
+		}		
+	}
+	return str;
+}
+
+
+
+void insert_char(char* string,const char* insert, int pos)
+{    char *tamp = "" ;
+    
+    strncpy(tamp, string, pos);
+    int len = strlen(tamp);
+    strcpy(tamp+len, insert);
+    len += strlen(string);
+    strcpy(tamp+len, string+pos);
+    
+    strcpy(string, tamp);
+}
+
+
+	

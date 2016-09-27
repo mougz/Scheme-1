@@ -36,9 +36,6 @@ object make_character(char caractere){
 	return t;
 }
 
-object stringlength( char * str   ) {
-}
-
 
 object make_string(char * str ){
 	object t=make_object(SFS_STRING);
@@ -55,6 +52,21 @@ object make_bool(void) {
 
 object make_integer(int number) {
 	object t=make_object(SFS_INTEGER);
-	t->this.number=number;
+	t->this.integer=number;
 	return t;
-}	
+}
+
+object make_symbol( string chaine )
+{
+    
+    object t = make_object(SFS_SYMBOL);
+    
+    strcpy(t->this.symbol, chaine);
+    
+    return t;
+}
+/*object make_pair (void) {
+	object t = make_object(SFS_PAIR);
+	t-> this.pair = t;
+	return t;
+}*/	
